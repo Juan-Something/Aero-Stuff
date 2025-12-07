@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib as mpL
+import sympy as sp
 
 
 ## Question 1
@@ -37,3 +38,6 @@ translvlH = np.transpose(lvlH)
 horizonObjectDistance = np.dot(translvlH, objectDistance)
 print("Object Distance in Horizon Frame (km):")
 print(horizonObjectDistance)
+
+rotClass = rotationMatrix(np.radians(63), np.radians(15), np.radians(-20))
+print(rotClass)
