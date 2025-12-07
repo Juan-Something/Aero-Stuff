@@ -9,8 +9,12 @@ import matplotlib.pyplot as plt
 # Question #1
 
 """
-Sutherland's Law is used, assumptions made are that air behaves as an ideal gas and that the temperature range is valid for Sutherland's law.
-We will ignore affects such as ionization and vibrations of molecules at high temperatures. 
+Summary: We use Sutherland's law to calculate viscocity as a function of temperature
+Assumptions: Ideal Gas, valid temp range, ignoring affects such as ionization and vibration (only considering viscocity
+as a function of tempreature)
+Variables: Viscosity
+Sutherland's Law is used, assumptions made are that air behaves as an ideal gas and that the temperature range is valid
+ for Sutherland's law. We will ignore affects such as ionization and vibrations of molecules at high temperatures. 
 """
 def airViscositySutherland(TCelsius):
 
@@ -37,6 +41,12 @@ plt.grid()
 plt.show(block = False)
 
 # FS1
+"""
+Summary: pressure, density, and viscosity all have variation dependent on altitude, a standard atmosphere model is one
+way to track and plot how altitude affects all three
+Assumptions: Atmosphere model assumes ideal gas, does not account for affects at high temperatures
+Variables: pressure, density, viscocity
+"""
 
 def standardAtmshpereModel(h):
 
@@ -106,6 +116,7 @@ def standardAtmshpereModel(h):
 altitudeArray = np.linspace(0, 100, 200)
 
 results = np.array([standardAtmshpereModel(h) for h in altitudeArray])
+
 tempArray = results[:, 0]
 pressureArray = results[:, 1]
 densityArray = results[:, 2]
@@ -134,6 +145,14 @@ plt.show(block = False)
 
 # FS2
 
+"""
+Summary: Space Elevators are a hypothetical way to transport things from Earth to Low Earth Orbit,
+assuming that our theoretical elevator has a conduit which has a height of 100 km and a diameter of 2 m, how would
+pressure affect the forces acting upon it
+Assumptions: No environmental affects, g is constant, pressure is the only force we are considering
+Variables: F, M, Center of Pressure, and Centroidal
+"""
+
 conduitWidth = 2 # m
 
 z = np.linspace(0, 100, 2000) # Altitude from 0 to 100 km
@@ -160,29 +179,31 @@ print(f"Moment about the center of the conduit: {centroidMoment:.4f} Nm")
 # FS4
 
 # FM
+"""
+Summary: given governing equation for reentry we need to manipulate it to be a function of time that can be integrated
+as an ODE to produce speed values for all height and time instances from 100 km to 0 (ground)
+Equations: -1/g*dU/dh = (W/CdS)^-1 * (rho*U^2/2), standard atmosphere model
+Variables: Rho, U 
+"""
 
 """
--1/g*dU/dh = (W/CdS)^-1 * (rho*U^2/2) 
+
 """
-g = 9.80665 # m/s^2
-ballisticCoefficient = 4800 # kg/m^2
-initialVelocity = 11200 # m/s
-initialAltitude = 100 # km
+g = 9.80665  # m/s^2
+ballisticCoefficient = 4800  # kg/m^2
+
+initialVelocity = 11200  # m/s (Corrected from 112000)
+initialAltitude = 100000  # meters (100 km)
 dropZ = np.linspace(100, 0, 2000)
 Rho2 = np.zeros_like(dropZ)
 T2, P2, Rho2, mu2 = standardAtmshpereModel(dropZ)
 dropZMeters = dropZ * 1000
 
 
-g = 9.80665  # m/s^2
-ballisticCoefficient = 4800  # kg/m^2
-
-initialVelocity = 11200  # m/s (Corrected from 112000)
-initialAltitude = 100000  # meters (100 km)
-
-# Prepare density vs altitude arrays (already calculated above)
-# dropZ is in km, so dropZMeters is already defined
-# Rho2 is density from Standard Atmosphere model
+"""
+Analysis: To be able to obtain speed for time instances we have to take rho and interpolate it to a height, after this we then take
+the height derivate and turn it into something that returns a value as a function of time
+"""
 
 # Define time-domain ODE system: y = [h(t), U(t)]
 def rhs(t, y):
@@ -200,20 +221,16 @@ def rhs(t, y):
 
     return [dhdt, dUdt]
 
-# Stop when altitude reaches 0
-def hit_ground(t, y):
-    return y[0]  # stop when h = 0
-hit_ground.terminal = True
-hit_ground.direction = -1  # only trigger when descending
+
 
 # Solve
 sol = sp.integrate.solve_ivp(
     rhs,
-    (0, 20),  # time span guess
+    (0, 20),
     [initialAltitude, initialVelocity],
     
     max_step=1.0,
-    rtol=1e-6,
+    rtol=1e-8,
     atol=1e-8
 )
 
@@ -222,16 +239,15 @@ h = sol.y[0]
 U = sol.y[1]
 
 # Plot Velocity vs Altitude
-plt.figure(4)
+plt.figure(3)
 plt.plot(U / 1000, h / 1000)
 plt.xlabel('Velocity, km/s')
 plt.ylabel('Altitude, km')
 plt.title('Velocity vs Altitude during Descent (solve_ivp)')
-plt.gca().invert_yaxis()  # ground at bottom
 plt.grid()
 plt.show()
 
-plt.figure(5)
+plt.figure(4)
 plt.plot(t, U / 1000)
 plt.xlabel('Time, s')
 plt.ylabel('Velocity, km/s')
